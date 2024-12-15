@@ -80,9 +80,9 @@ def describeData(clockedInHours, clockedInHoursPerWeek):
 
 		if previous.week != current.week and previous.weekKey in clockedInHoursPerWeek:
 			prevWeek = clockedInHoursPerWeek[previous.weekKey]
-			start = Date(prevWeek.datesActive[0])
-			end = Date(prevWeek.datesActive[-1])
-			print(f"{start.dayOfWeek} {start.day} -> {end.dayOfWeek} {end.day}: {describeInterval(prevWeek.totalHours)}")
+			start = Date(prevWeek['datesActive'][0])
+			end = Date(prevWeek['datesActive'][-1])
+			print(f"{start.dayOfWeek} {start.day} -> {end.dayOfWeek} {end.day}: {describeInterval(prevWeek['totalHours'])}")
 		if previous.year != current.year:
 			print(current.year)
 		if previous.month != current.month:
@@ -134,10 +134,10 @@ def calculate(print, input):
 
 				clockedInHours[parsedDate] = clockedInHours.get(parsedDate, 0) + interval
 
-				week = 'week' + datetime.date(map(int, parsedDate.split('-'))).isocalendar()[1]
+				week = Date(parsedDate).weekKey
 				clockedInHoursPerWeek[week] = clockedInHoursPerWeek.get(week, {})
-				clockedInHoursPerWeek[week].datesActive = clockedInHoursPerWeek[week].get('datesActive', []) + [parsedDate]
-				clockedInHoursPerWeek[week].totalHours = clockedInHoursPerWeek[week].get('totalHours', 0) + interval
+				clockedInHoursPerWeek[week]['datesActive'] = clockedInHoursPerWeek[week].get('datesActive', []) + [parsedDate]
+				clockedInHoursPerWeek[week]['totalHours'] = clockedInHoursPerWeek[week].get('totalHours', 0) + interval
 
 				oldClockOut = clockOut
 				oldDate = parsedDate

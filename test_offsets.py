@@ -1,4 +1,4 @@
-from src.offsets import Offsets
+from offsets import Offsets
 
 def test_init_with_key():
 	assert Offsets("am").offsets == (0, 0)

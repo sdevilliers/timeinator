@@ -1,5 +1,5 @@
 import pytest
-from src.calculateWorkHoursHelpers import calculate
+from calculateWorkHoursHelpers import calculate
 
 def test_calculate_single_day():
 	printInputs = []
