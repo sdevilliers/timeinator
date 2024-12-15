@@ -2,6 +2,7 @@ import re
 import csv
 import datetime
 from offsets import Offsets
+from date import Date
 
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
@@ -49,7 +50,12 @@ def getCorrectOffsets(previousOffsets, previousClockOut, previousDate, clockRead
 		for the same day as the current clock readings.
 	"""
 
-	correctOffsets = AM.offsets if dateChanged(previousDate, parsedDate) else previousOffsets
+	if dateChanged(previousDate, parsedDate):
+		correctOffsets = AM.offsets
+		previousClockOut = 0
+	else:
+		correctOffsets = previousOffsets
+
 	clockIn, clockOut, _ = getData(correctOffsets, clockReadings)
 
 	def offsetWorks():
@@ -58,32 +64,31 @@ def getCorrectOffsets(previousOffsets, previousClockOut, previousDate, clockRead
 	while not offsetWorks():
 		correctOffsets = Offsets(correctOffsets).increment()
 		if correctOffsets == None:
-			raise ValueError(f"Invalid timestamps on {parsedDate}: {clockReadings[0]}:{clockReadings[1]} -> {clockReadings[2]}:{clockReadings[3]}. Clock ins more than 24h after midnight should be reported on the following day")
+			raise ValueError(f"Invalid timestamps on {parsedDate}: {clockReadings[0][0]}:{clockReadings[0][1]} -> {clockReadings[1][0]}:{clockReadings[1][1]}. Clock ins more than 24h after midnight should be reported on the following day")
 		clockIn, clockOut, _ = getData(correctOffsets, clockReadings)
 
 	return correctOffsets
 
 def describeInterval(hours):
 	mins = round((hours % 1) * 60)
-	return f"{hours:.2f}h or {hours:d}h {mins}min"
+	return f"{hours:.2f}h or {int(hours)}h {mins}min"
 
-def describeData(clockedInHours):
-	previousYear = None
-	previousMonth = None
+def describeData(clockedInHours, clockedInHoursPerWeek):
+	for index, (date, hours) in enumerate(clockedInHours.items()):
+		current = Date(date)
+		previous = Date(list(clockedInHours.keys())[index - 1])
 
-	for date, hours in clockedInHours.items():
-		year, month, day = map(int, date.split('-'))
-		month = datetime.date(year, month, 1).strftime('%B')
-		day_of_week = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][datetime.date(year, month, day).weekday()]
+		if previous.week != current.week and previous.weekKey in clockedInHoursPerWeek:
+			prevWeek = clockedInHoursPerWeek[previous.weekKey]
+			start = Date(prevWeek.datesActive[0])
+			end = Date(prevWeek.datesActive[-1])
+			print(f"{start.dayOfWeek} {start.day} -> {end.dayOfWeek} {end.day}: {describeInterval(prevWeek.totalHours)}")
+		if previous.year != current.year:
+			print(current.year)
+		if previous.month != current.month:
+			print(current.monthStr)
 
-		if previousYear != year:
-			print(year)
-			previousYear = year
-		if previousMonth != month:
-			print(month)
-			previousMonth = month
-
-		print(f"{day_of_week} {day}: {describeInterval(hours)}")
+		print(f"{current.dayOfWeek} {current.day}: {describeInterval(hours)}")
 
 
 AM = Offsets("am")
@@ -107,29 +112,39 @@ def calculate(print, input):
 	file_path = input("Enter the path to your CSV file: ")
 
 	clockedInHours = {}
-	hoursDataPerDay = {}
-	hourOffsets = AM.offsets # Allows us to track am (+0hr) vs pm (+12hr)
+	clockedInHoursPerWeek = {}
 
 	try:
 		with open(file_path, newline='') as csvfile:
 			csv_reader = csv.reader(csvfile)
 			next(csv_reader, None) # skip header
 
+			clockReadings, parsedDate = parseInput(next(csv_reader, None))
+			hourOffsets = AM.offsets # Allows us to track am (+0hr) vs pm (+12hr)
+			oldClockOut = 0
+			oldDate = None
+
 			while clockReadings:
-				clockReadings, parsedDate = parseInput(next(csv_reader, None))
 				hourOffsets = getCorrectOffsets(hourOffsets, oldClockOut, oldDate, clockReadings, parsedDate)
 
 				clockIn, clockOut, interval = getData(hourOffsets, clockReadings)
 
 				if hourOffsets == MIDNIGHT.offsets:
-					print(f"Hey there buddy, you're working really late! Looks like you worked from {clockReadings[0]}:{clockReadings[1]}pm on {parsedDate} until {clockReadings[2]}:{clockReadings[3]}am the next day.")
+					print(f"Hey there buddy, you're working really late! Looks like you worked from {clockReadings[0][0]}:{clockReadings[0][1]}pm on {parsedDate} until {clockReadings[1][0]}:{clockReadings[1][1]}am the next day.")
 
 				clockedInHours[parsedDate] = clockedInHours.get(parsedDate, 0) + interval
-				hoursDataPerDay[parsedDate] = hoursDataPerDay.get(parsedDate, []).append((clockIn, clockOut))
+
+				week = 'week' + datetime.date(map(int, parsedDate.split('-'))).isocalendar()[1]
+				clockedInHoursPerWeek[week] = clockedInHoursPerWeek.get(week, {})
+				clockedInHoursPerWeek[week].datesActive = clockedInHoursPerWeek[week].get('datesActive', []) + [parsedDate]
+				clockedInHoursPerWeek[week].totalHours = clockedInHoursPerWeek[week].get('totalHours', 0) + interval
+
 				oldClockOut = clockOut
 				oldDate = parsedDate
+				clockReadings, parsedDate = parseInput(next(csv_reader, None))
+				parsedDate = parsedDate or oldDate
 
-		describeData(clockedInHours)
+		describeData(clockedInHours, clockedInHoursPerWeek)
 
 	except FileNotFoundError:
 		print(f"File not found: {file_path}")
