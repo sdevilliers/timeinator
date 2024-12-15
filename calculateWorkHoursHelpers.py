@@ -81,7 +81,7 @@ def describeData(clockedInHours, clockedInHoursPerWeek, print):
 		weekToPrint = clockedInHoursPerWeek[weekKeyToPrint]
 		start = Date(weekToPrint['datesActive'][0])
 		end = Date(weekToPrint['datesActive'][-1])
-		print(f"{start.dayOfWeek} {start.day} -> {end.dayOfWeek} {end.day}: {describeInterval(weekToPrint['totalHours'])}")
+		print(f"{start.dayOfWeek} {start.day:2} -> {end.dayOfWeek} {end.day:2}: {describeInterval(weekToPrint['totalHours'])}")
 
 	firstDate = Date(list(clockedInHours.keys())[0])
 	print(str(firstDate.year))
@@ -98,7 +98,7 @@ def describeData(clockedInHours, clockedInHoursPerWeek, print):
 		if previous.month != current.month:
 			print(current.monthStr)
 
-		print(f"{current.dayOfWeek} {current.day}: {describeInterval(hours)}")
+		print(f"{current.dayOfWeek} {current.day:2}: {describeInterval(hours)}")
 
 	lastDate = Date(list(clockedInHours.keys())[-1])
 	printWeek(lastDate.weekKey)
