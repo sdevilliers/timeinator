@@ -74,11 +74,18 @@ def describeInterval(hours):
 	return f"{hours:.2f}h or {int(hours)}h {mins}min"
 
 def describeData(clockedInHours, clockedInHoursPerWeek, print):
+	if not len(clockedInHours):
+		return
+
 	def printWeek(weekKeyToPrint):
 		weekToPrint = clockedInHoursPerWeek[weekKeyToPrint]
 		start = Date(weekToPrint['datesActive'][0])
 		end = Date(weekToPrint['datesActive'][-1])
 		print(f"{start.dayOfWeek} {start.day} -> {end.dayOfWeek} {end.day}: {describeInterval(weekToPrint['totalHours'])}")
+
+	firstDate = Date(list(clockedInHours.keys())[0])
+	print(firstDate.year)
+	print(firstDate.monthStr)
 
 	for index, (date, hours) in enumerate(clockedInHours.items()):
 		current = Date(date)
@@ -93,7 +100,8 @@ def describeData(clockedInHours, clockedInHoursPerWeek, print):
 
 		print(f"{current.dayOfWeek} {current.day}: {describeInterval(hours)}")
 
-	printWeek(Date(list(clockedInHours.keys())[-1]).weekKey)
+	lastDate = Date(list(clockedInHours.keys())[-1])
+	printWeek(lastDate.weekKey)
 
 
 
