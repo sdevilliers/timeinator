@@ -1,5 +1,6 @@
 import re
 import csv
+import datetime
 from offsets import Offsets
 
 #!/usr/bin/env python3
@@ -66,6 +67,25 @@ def describeInterval(hours):
 	mins = round((hours % 1) * 60)
 	return f"{hours:.2f}h or {hours:d}h {mins}min"
 
+def describeData(clockedInHours):
+	previousYear = None
+	previousMonth = None
+
+	for date, hours in clockedInHours.items():
+		year, month, day = map(int, date.split('-'))
+		month = datetime.date(year, month, 1).strftime('%B')
+		day_of_week = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][datetime.date(year, month, day).weekday()]
+
+		if previousYear != year:
+			print(year)
+			previousYear = year
+		if previousMonth != month:
+			print(month)
+			previousMonth = month
+
+		print(f"{day_of_week} {day}: {describeInterval(hours)}")
+
+
 AM = Offsets("am")
 NOON = Offsets("noon")
 PM = Offsets("pm")
@@ -109,7 +129,7 @@ def calculate(print, input):
 				oldClockOut = clockOut
 				oldDate = parsedDate
 
-		print(f"Total hours worked: {describeInterval(clockedInHours)}")
+		describeData(clockedInHours)
 
 	except FileNotFoundError:
 		print(f"File not found: {file_path}")
