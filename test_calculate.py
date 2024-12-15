@@ -12,7 +12,7 @@ def test_calculate_single_day():
 
 	calculate(print, input)
 	expected = ["2024", "August", "Mon 26: 8.92h or 8h 55min", "Mon 26 -> Mon 26: 8.92h or 8h 55min"]
-	assert printInputs[-len(expected):-1] == expected
+	assert printInputs[-len(expected):] == expected
 
 def test_calculate_multiple_days():
 	printInputs = []
@@ -25,4 +25,4 @@ def test_calculate_multiple_days():
 
 	calculate(print, input)
 	expected = ["2024","August", "Mon 26: 8.92h or 8h 55min", "Tue 27: 9.02h or 9h 1min", "Wed 28: 7.80h or 7h 48min", "Thu 29: 7.60h or 7h 36min", "Mon 26 -> Thu 29: 33.33h or 33h 20min", "September", "Tue  3: 4.69h or 4h 41min", "Tue  3 -> Tue  3: 4.69h or 4h 41min"]
-	assert printInputs[-len(expected):-1] == expected
+	assert printInputs[-len(expected):] == expected
