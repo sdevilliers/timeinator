@@ -73,22 +73,28 @@ def describeInterval(hours):
 	mins = round((hours % 1) * 60)
 	return f"{hours:.2f}h or {int(hours)}h {mins}min"
 
-def describeData(clockedInHours, clockedInHoursPerWeek):
+def describeData(clockedInHours, clockedInHoursPerWeek, print):
+	def printWeek(weekKeyToPrint):
+		weekToPrint = clockedInHoursPerWeek[weekKeyToPrint]
+		start = Date(weekToPrint['datesActive'][0])
+		end = Date(weekToPrint['datesActive'][-1])
+		print(f"{start.dayOfWeek} {start.day} -> {end.dayOfWeek} {end.day}: {describeInterval(weekToPrint['totalHours'])}")
+
 	for index, (date, hours) in enumerate(clockedInHours.items()):
 		current = Date(date)
-		previous = Date(list(clockedInHours.keys())[index - 1])
+		previous = Date(list(clockedInHours.keys())[(index or 1) - 1])
 
 		if previous.week != current.week and previous.weekKey in clockedInHoursPerWeek:
-			prevWeek = clockedInHoursPerWeek[previous.weekKey]
-			start = Date(prevWeek['datesActive'][0])
-			end = Date(prevWeek['datesActive'][-1])
-			print(f"{start.dayOfWeek} {start.day} -> {end.dayOfWeek} {end.day}: {describeInterval(prevWeek['totalHours'])}")
+			printWeek(previous.weekKey)
 		if previous.year != current.year:
 			print(current.year)
 		if previous.month != current.month:
 			print(current.monthStr)
 
 		print(f"{current.dayOfWeek} {current.day}: {describeInterval(hours)}")
+
+	printWeek(Date(list(clockedInHours.keys())[-1]).weekKey)
+
 
 
 AM = Offsets("am")
@@ -127,7 +133,7 @@ def calculate(print, input):
 			while clockReadings:
 				hourOffsets = getCorrectOffsets(hourOffsets, oldClockOut, oldDate, clockReadings, parsedDate)
 
-				clockIn, clockOut, interval = getData(hourOffsets, clockReadings)
+				_, clockOut, interval = getData(hourOffsets, clockReadings)
 
 				if hourOffsets == MIDNIGHT.offsets:
 					print(f"Hey there buddy, you're working really late! Looks like you worked from {clockReadings[0][0]}:{clockReadings[0][1]}pm on {parsedDate} until {clockReadings[1][0]}:{clockReadings[1][1]}am the next day.")
@@ -144,7 +150,7 @@ def calculate(print, input):
 				clockReadings, parsedDate = parseInput(next(csv_reader, None))
 				parsedDate = parsedDate or oldDate
 
-		describeData(clockedInHours, clockedInHoursPerWeek)
+		describeData(clockedInHours, clockedInHoursPerWeek, print)
 
 	except FileNotFoundError:
 		print(f"File not found: {file_path}")

@@ -6,7 +6,7 @@ def test_calculate_single_day():
 	print = lambda x: printInputs.append(x)
 	def input(prompt):
 		switch = {
-			"Enter the path to your CSV file: ": "../test-data/single-day.csv"
+			"Enter the path to your CSV file: ": "single-day.csv"
 		}
 		return switch.get(prompt, "")
 
@@ -19,7 +19,7 @@ def test_calculate_multiple_days():
 	print = lambda x: printInputs.append(x)
 	def input(prompt):
 		switch = {
-			"Enter the path to your CSV file: ": "../test-data/multi-day.csv"
+			"Enter the path to your CSV file: ": "multi-day.csv"
 		}
 		return switch.get(prompt, "")
 

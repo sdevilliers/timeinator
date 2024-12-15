@@ -1,9 +1,0 @@
-from test_calculate import test_calculate_single_day, test_calculate_multiple_days
-from test_offsets import test_init_with_key, test_init_with_offset, test_init_with_invalid_key, test_indexing
-
-test_calculate_single_day()
-test_calculate_multiple_days()
-test_init_with_key()
-test_init_with_offset()
-test_init_with_invalid_key()
-test_indexing()
